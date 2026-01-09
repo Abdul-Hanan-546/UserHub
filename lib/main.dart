@@ -730,12 +730,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _checkAuthState();
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AuthWrapper()),
-      );
-    });
   }
 
   Future<void> _checkAuthState() async {
@@ -744,6 +738,11 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final user = firebase_auth.FirebaseAuth.instance.currentUser;
+
+    // Wait for the timer to complete before navigating
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
 
     if (user != null) {
       Navigator.of(context).pushReplacement(
@@ -877,15 +876,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Login successful - navigate to Users screen
+      // Login successful
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const UsersScreen()),
       );
     } else {
-      // Login failed - check error message
+      // Login failed
       final errorMessage = authProvider.errorMessage ?? 'Login failed';
 
-      if (errorMessage.contains('Account does not exist')) {
+      // Check if account doesn't exist
+      if (errorMessage.contains('does not exist') ||
+          errorMessage.contains('Please sign up first')) {
         _showAccountNotFoundDialog();
       } else {
         _showErrorDialog(errorMessage);
@@ -902,14 +903,21 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Google sign-in successful
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const UsersScreen()),
       );
     } else {
-      // Google sign-in failed
       final errorMessage = authProvider.errorMessage ?? 'Google sign-in failed';
-      _showErrorDialog(errorMessage);
+
+      // Check for connection errors
+      if (errorMessage.toLowerCase().contains('network') ||
+          errorMessage.toLowerCase().contains('connection') ||
+          errorMessage.toLowerCase().contains('internet') ||
+          errorMessage.toLowerCase().contains('timeout')) {
+        _showConnectionErrorBottomSheet();
+      } else {
+        _showErrorDialog(errorMessage);
+      }
     }
   }
 
@@ -963,7 +971,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter your email';
                   }
-                  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+                  );
                   if (!emailRegex.hasMatch(value.trim())) {
                     return 'Please enter a valid email';
                   }
@@ -1102,6 +1111,103 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Show Connection Error Bottom Sheet
+  void _showConnectionErrorBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3F2FD),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.wifi_off_rounded,
+                  size: 56,
+                  color: Colors.blue.shade600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            const Text(
+              'Connection Error',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Google sign-in failed. Please check your internet connection and try again.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleGoogleSignIn();
+                },
+                icon: const Icon(Icons.refresh, size: 20),
+                label: const Text(
+                  'Tap to Retry',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
@@ -1194,7 +1300,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Please enter a valid email address';
                               }
-                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+                              );
                               if (!emailRegex.hasMatch(value.trim())) {
                                 return 'Please enter a valid email address';
                               }
@@ -1452,7 +1559,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Sign up successful - User is automatically logged in by Firebase
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account created successfully!'),
@@ -1461,13 +1567,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       );
 
-      // AuthWrapper will automatically redirect to UsersScreen
-      // because Firebase Auth state changed (user is now logged in)
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const UsersScreen()),
       );
     } else {
-      // Sign up failed
       final errorMessage = authProvider.errorMessage ?? 'Sign up failed';
       _showErrorDialog(errorMessage);
     }
@@ -1624,7 +1727,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             if (value == null || value.trim().isEmpty) {
               return 'Please enter a valid email address';
             }
-            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+.)+[\w-]{2,4}$');
+            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+.)+[\w-]{2,4}$'
+            );
             if (!emailRegex.hasMatch(value.trim())) {
               return 'Please enter a valid email address';
             }
@@ -1781,7 +1885,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 }
-
 // SCREEN 4 - USERS SCREEN
 class UsersScreen extends StatefulWidget {
   const UsersScreen({Key? key}) : super(key: key);
@@ -1791,681 +1894,666 @@ class UsersScreen extends StatefulWidget {
 }
 
 class _UsersScreenState extends State<UsersScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // UserProvider automatically fetches users on initialization
-  }
+  bool _isLoadingLogout = false;
 
-  // Handle Logout using Provider
+  // Handle Logout
   Future<void> _handleLogout() async {
-    // Show confirmation dialog
-    final shouldLogout = await _showLogoutConfirmation();
-
-    if (shouldLogout != true) return;
+    setState(() {
+      _isLoadingLogout = true;
+    });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    await authProvider.signOut();
+    try {
+      await authProvider.signOut();
 
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
+      if (!mounted) return;
+
+      // Navigate to Login Screen after logout
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
       );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoadingLogout = false;
+      });
+
+      _showErrorDialog('Logout failed. Please try again.');
     }
   }
 
-  // Show logout confirmation dialog
-  Future<bool?> _showLogoutConfirmation() {
-    return showDialog<bool>(
+  // Confirm Logout Dialog
+  void _showLogoutConfirmation() {
+    showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              'Logout',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: const Text('Are you sure you want to logout?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Logout',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          'Logout',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _handleLogout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Logout', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
-  // Handle Refresh using Provider
-  Future<void> _handleRefresh() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.refreshUsers();
-
-    if (mounted) {
-      _showSuccessSnackBar('Users list refreshed');
-    }
+  // Delete User Confirmation
+  void _showDeleteConfirmation(FirestoreUser user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          'Delete User',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text('Are you sure you want to delete ${user.name}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _handleDeleteUser(user.uid);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
-  // Handle Delete User using Provider
-  Future<void> _handleDeleteUser(FirestoreUser user) async {
-    // Show confirmation dialog
-    final shouldDelete = await _showDeleteConfirmation(user.name);
-
-    if (shouldDelete != true) return;
-
+  // Handle Delete User
+  Future<void> _handleDeleteUser(String uid) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    final success = await userProvider.deleteUser(user.uid);
+    final success = await userProvider.deleteUser(uid);
 
     if (!mounted) return;
 
     if (success) {
-      _showSuccessSnackBar('User deleted successfully');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User deleted successfully'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
     } else {
-      _showErrorSnackBar('Failed to delete user');
+      _showErrorDialog('Failed to delete user. Please try again.');
     }
   }
 
-  // Show delete confirmation dialog
-  Future<bool?> _showDeleteConfirmation(String userName) {
-    return showDialog<bool>(
+  // Show Error Dialog
+  void _showErrorDialog(String message) {
+    showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text(
-              'Delete User',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: Text('Are you sure you want to delete "$userName"?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.grey),
-                ),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(message),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text('OK', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Show User Details Bottom Sheet
+  void _showUserDetails(FirestoreUser user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 32,
+                  backgroundColor: Colors.blue.shade100,
+                  backgroundImage:
+                  user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                  child: user.photoUrl == null
+                      ? Text(
+                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  )
+                      : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: user.provider == 'google'
+                              ? Colors.red.shade50
+                              : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          user.provider == 'google' ? 'Google' : 'Email',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: user.provider == 'google'
+                                ? Colors.red.shade700
+                                : Colors.blue.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(color: Colors.white),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+
+            // User Details
+            _buildDetailRow(Icons.email, 'Email', user.email),
+            const SizedBox(height: 16),
+            _buildDetailRow(
+              Icons.calendar_today,
+              'Joined',
+              _formatDate(user.createdAt),
+            ),
+            const SizedBox(height: 16),
+            _buildDetailRow(
+              Icons.login,
+              'Last Login',
+              user.lastLoginAt != null
+                  ? _formatDate(user.lastLoginAt!)
+                  : 'Never',
+            ),
+            const SizedBox(height: 24),
+
+            // Delete Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showDeleteConfirmation(user);
+                },
+                icon: const Icon(Icons.delete, size: 20),
+                label: const Text(
+                  'Delete User',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.grey.shade600),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
-    );
-  }
-
-  // Show error message
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  // Show success message
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<UserProvider>(
-      builder: (context, userProvider, child) {
-        return Scaffold(
-          backgroundColor: Colors.grey.shade50,
-          body: SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      _buildContent(userProvider),
-                      _buildLogoutButton(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  //APP BAR
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildAppBarSpacer(),
-          _buildAppBarTitle(),
-          _buildRefreshButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppBarSpacer() {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-    );
-  }
-
-  Widget _buildAppBarTitle() {
-    return const Text(
-      'Registered Users',
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-    );
-  }
-
-  Widget _buildRefreshButton() {
-    return Consumer<UserProvider>(
-      builder: (context, userProvider, child) {
-        return IconButton(
-          icon: Icon(
-            Icons.refresh,
-            color: userProvider.isLoading ? Colors.grey : Colors.blue,
-            size: 24,
-          ),
-          onPressed: userProvider.isLoading ? null : _handleRefresh,
-          tooltip: 'Refresh',
-        );
-      },
-    );
-  }
-
-  //CONTENT
-  Widget _buildContent(UserProvider userProvider) {
-    if (userProvider.isLoading && userProvider.users.isEmpty) {
-      return _buildLoadingState();
-    }
-
-    if (userProvider.errorMessage != null && userProvider.users.isEmpty) {
-      return _buildErrorState(userProvider.errorMessage!);
-    }
-
-    if (userProvider.users.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return _buildUsersList(userProvider.users);
-  }
-
-  //LOADING STATE
-  Widget _buildLoadingState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildLoadingIndicator(),
-            const SizedBox(height: 32),
-            _buildLoadingTitle(),
-            const SizedBox(height: 12),
-            _buildLoadingSubtitle(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingIndicator() {
-    return SizedBox(
-      width: 64,
-      height: 64,
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey.shade300.withOpacity(0.3),
-                width: 6,
-              ),
-            ),
-          ),
-          const CircularProgressIndicator(
-            strokeWidth: 6,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingTitle() {
-    return const Text(
-      'Loading users...',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-    );
-  }
-
-  Widget _buildLoadingSubtitle() {
-    return Text(
-      'Please wait while we retrieve the data.',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey.shade600,
-      ),
-    );
-  }
-
-  //ERROR STATE
-  Widget _buildErrorState(String error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildErrorIcon(),
-            const SizedBox(height: 32),
-            _buildErrorTitle(),
-            const SizedBox(height: 12),
-            _buildErrorMessage(),
-            const SizedBox(height: 24),
-            _buildRetryButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorIcon() {
-    return Container(
-      width: 112,
-      height: 112,
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.error_outline,
-        size: 48,
-        color: Colors.red,
-      ),
-    );
-  }
-
-  Widget _buildErrorTitle() {
-    return const Text(
-      'Error Loading Users',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-    );
-  }
-
-  Widget _buildErrorMessage() {
-    return Text(
-      'Failed to load users from Firestore.',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey.shade600,
-      ),
-    );
-  }
-
-  Widget _buildRetryButton() {
-    return ElevatedButton.icon(
-      onPressed: _handleRefresh,
-      icon: const Icon(Icons.refresh),
-      label: const Text('Retry'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 12,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
-  }
-
-  //EMPTY STATE
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildEmptyIcon(),
-            const SizedBox(height: 16),
-            _buildEmptyTitle(),
-            const SizedBox(height: 8),
-            _buildEmptySubtitle(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyIcon() {
-    return Icon(
-      Icons.person_off_outlined,
-      size: 64,
-      color: Colors.grey.shade600,
-    );
-  }
-
-  Widget _buildEmptyTitle() {
-    return const Text(
-      'No users found',
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Colors.black,
-      ),
-    );
-  }
-
-  Widget _buildEmptySubtitle() {
-    return Text(
-      'Be the first to sign up!',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey.shade600,
-      ),
-    );
-  }
-
-  //USERS LIST
-  Widget _buildUsersList(List<FirestoreUser> users) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: users.length,
-      itemBuilder: (context, index) {
-        final user = users[index];
-        return _buildUserCard(user, index);
-      },
-    );
-  }
-
-  //USER CARD
-  Widget _buildUserCard(FirestoreUser user, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: _buildCardDecoration(),
-      child: Row(
-        children: [
-          _buildUserAvatar(user, index),
-          const SizedBox(width: 12),
-          _buildUserInfo(user),
-          _buildUserBadge(user),
-          const SizedBox(width: 8),
-          _buildDeleteButton(user),
-        ],
-      ),
-    );
-  }
-
-  BoxDecoration _buildCardDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: Colors.grey.shade200,
-        width: 1,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: const Offset(0, 2),
         ),
       ],
     );
   }
 
-  Widget _buildUserAvatar(FirestoreUser user, int index) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: _getAvatarColor(index),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: user.photoUrl != null && user.photoUrl!.isNotEmpty
-            ? ClipOval(
-          child: Image.network(
-            user.photoUrl!,
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Text(
-                user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              );
-            },
-          ),
-        )
-            : Text(
-          user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-          style: const TextStyle(
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      // Today - Show time in 12-hour format with AM/PM
+      int hour = date.hour;
+      String period = hour >= 12 ? 'PM' : 'AM';
+
+      // Convert to 12-hour format
+      if (hour > 12) {
+        hour = hour - 12;
+      } else if (hour == 0) {
+        hour = 12; // Midnight case
+      }
+
+      String minute = date.minute.toString().padLeft(2, '0');
+      return 'Today at $hour:$minute $period';
+
+    } else if (difference.inDays == 1) {
+      // Yesterday
+      return 'Yesterday';
+
+    } else if (difference.inDays < 7) {
+      // Less than 7 days - Show "X days ago"
+      return '${difference.inDays} days ago';
+
+    } else {
+      // 7 days or more - Show full date
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'UserHub',
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
-      ),
-    );
-  }
-
-  Color _getAvatarColor(int index) {
-    final colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-    ];
-    return colors[index % colors.length];
-  }
-
-  Widget _buildUserInfo(FirestoreUser user) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            user.name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user.email,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserBadge(FirestoreUser user) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: user.provider == 'google' ? Colors.red.shade50 : Colors.blue
-            .shade50,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            user.provider == 'google' ? Icons.g_mobiledata : Icons.email,
-            size: 16,
-            color: user.provider == 'google' ? Colors.red : Colors.blue,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            user.provider == 'google' ? 'Google' : 'Email',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: user.provider == 'google' ? Colors.red : Colors.blue,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeleteButton(FirestoreUser user) {
-    return IconButton(
-      icon: const Icon(
-        Icons.delete_outline,
-        color: Colors.red,
-        size: 20,
-      ),
-      onPressed: () => _handleDeleteUser(user),
-      tooltip: 'Delete User',
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-    );
-  }
-
-  //LOGOUT BUTTON
-  Widget _buildLogoutButton() {
-    return Positioned(
-      bottom: 16,
-      right: 16,
-      child: GestureDetector(
-        onTap: _handleLogout,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 12,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.logout,
-                color: Colors.white,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        centerTitle: true,
+        actions: [
+          if (_isLoadingLogout)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                 ),
+              ),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.black),
+              onPressed: _showLogoutConfirmation,
+              tooltip: 'Logout',
+            ),
+        ],
+      ),
+      body: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          // Loading State
+          if (userProvider.isLoading && userProvider.users.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading users...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Error State
+          if (userProvider.errorMessage != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    userProvider.errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => userProvider.refreshUsers(),
+                    icon: const Icon(Icons.refresh, size: 20),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Empty State
+          if (userProvider.users.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.people_outline,
+                      size: 64,
+                      color: Colors.blue.shade300,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'No Users Found',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'There are no users registered yet.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () => userProvider.refreshUsers(),
+                    icon: const Icon(Icons.refresh, size: 20),
+                    label: const Text('Refresh'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // User List
+          return RefreshIndicator(
+            onRefresh: () => userProvider.refreshUsers(),
+            child: Column(
+              children: [
+                // User Count Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Row(
+                    children: [
+                      Icon(Icons.people, color: Colors.grey.shade600, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${userProvider.users.length} ${userProvider.users.length == 1 ? 'User' : 'Users'}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // User List
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: userProvider.users.length,
+                    itemBuilder: (context, index) {
+                      final user = userProvider.users[index];
+                      return _buildUserCard(user);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildUserCard(FirestoreUser user) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: () => _showUserDetails(user),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // User Avatar
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.blue.shade100,
+                backgroundImage:
+                user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
+                child: user.photoUrl == null
+                    ? Text(
+                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                )
+                    : null,
+              ),
+              const SizedBox(width: 16),
+
+              // User Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user.email,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: user.provider == 'google'
+                                ? Colors.red.shade50
+                                : Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                user.provider == 'google'
+                                    ? Icons.g_mobiledata
+                                    : Icons.email,
+                                size: 14,
+                                color: user.provider == 'google'
+                                    ? Colors.red.shade700
+                                    : Colors.blue.shade700,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                user.provider == 'google' ? 'Google' : 'Email',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: user.provider == 'google'
+                                      ? Colors.red.shade700
+                                      : Colors.blue.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow Icon
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey.shade400,
               ),
             ],
           ),
