@@ -2525,7 +2525,7 @@ class _UsersScreenState extends State<UsersScreen> {
                                     ? Icons.g_mobiledata
                                     : Icons.email,
                                 size: 14,
-                                color: user.provider == 'google'
+                                color: user.provider == 'googlegit push'
                                     ? Colors.red.shade700
                                     : Colors.blue.shade700,
                               ),
