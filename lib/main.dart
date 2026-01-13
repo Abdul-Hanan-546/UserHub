@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+
 
 // MAIN - Initialize Firebase
 void main() async {
@@ -717,7 +716,9 @@ class AuthService {
   }
 }
 
+// ============================================================
 // SCREEN 1 - SPLASH SCREEN
+// ============================================================
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -734,14 +735,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthState() async {
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
 
     final user = firebase_auth.FirebaseAuth.instance.currentUser;
-
-    // Wait for the timer to complete before navigating
     await Future.delayed(const Duration(seconds: 1));
-
     if (!mounted) return;
 
     if (user != null) {
@@ -758,97 +755,111 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 192,
-                  height: 192,
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Container(
-                  width: 128,
-                  height: 128,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 4,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 192,
+                    height: 192,
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.15),
+                      shape: BoxShape.circle,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.2),
-                        blurRadius: 24,
-                        spreadRadius: 8,
+                  ),
+                  Container(
+                    width: 128,
+                    height: 128,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.blueAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ],
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 24,
+                          spreadRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.manage_accounts,
+                      size: 64,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.manage_accounts,
-                    size: 64,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'UserHub',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                letterSpacing: -0.5,
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Manage and view user lists easily',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-            const SizedBox(height: 64),
-            SizedBox(
-              width: 32,
-              height: 32,
-              child: CircularProgressIndicator(
-                strokeWidth: 4,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.blue.withOpacity(0.3),
+              const SizedBox(height: 32),
+              const Text(
+                'UserHub',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  letterSpacing: -0.5,
                 ),
               ),
-            ),
-            const SizedBox(height: 200),
-            const Text(
-              'VERSION 1.0.0',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 2,
+              const SizedBox(height: 12),
+              const Text(
+                'Manage and view user lists easily',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.normal,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 64),
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  strokeWidth: 4,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.blue.withOpacity(0.7),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 200),
+              const Text(
+                'VERSION 1.0.0',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// ============================================================
 // SCREEN 2 - LOGIN SCREEN
+// ============================================================
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -862,7 +873,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Handle Email/Password Login using Provider
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -876,15 +886,12 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Login successful
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const UsersScreen()),
       );
     } else {
-      // Login failed
       final errorMessage = authProvider.errorMessage ?? 'Login failed';
 
-      // Check if account doesn't exist
       if (errorMessage.contains('does not exist') ||
           errorMessage.contains('Please sign up first')) {
         _showAccountNotFoundDialog();
@@ -894,7 +901,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Handle Google Sign-In using Provider
   Future<void> _handleGoogleSignIn() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -909,7 +915,6 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       final errorMessage = authProvider.errorMessage ?? 'Google sign-in failed';
 
-      // Check for connection errors
       if (errorMessage.toLowerCase().contains('network') ||
           errorMessage.toLowerCase().contains('connection') ||
           errorMessage.toLowerCase().contains('internet') ||
@@ -921,7 +926,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Show Forgot Password Dialog
   void _showForgotPasswordDialog() {
     final TextEditingController emailController = TextEditingController();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -929,10 +933,14 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
           'Reset Password',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
         content: Form(
           key: formKey,
@@ -952,14 +960,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'Enter your email',
                   hintStyle: const TextStyle(color: Colors.grey),
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -971,8 +979,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter your email';
                   }
-                  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-                  );
+                  final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                   if (!emailRegex.hasMatch(value.trim())) {
                     return 'Please enter a valid email';
                   }
@@ -985,29 +992,42 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                Navigator.of(context).pop();
-                await _handlePasswordReset(emailController.text.trim());
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey),
             ),
-            child: const Text('Send Link', style: TextStyle(color: Colors.white)),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blue, Colors.blueAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(context).pop();
+                  await _handlePasswordReset(emailController.text.trim());
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Send Link', style: TextStyle(color: Colors.white)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Handle Password Reset Email using Provider
   Future<void> _handlePasswordReset(String email) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -1025,93 +1045,150 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Show Account Not Found Dialog with Sign Up option
   void _showAccountNotFoundDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
           'Account Not Found',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
         content: const Text(
           'No account exists with this email. Would you like to create a new account?',
+          style: TextStyle(color: Colors.grey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SignUpScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey),
             ),
-            child: const Text('Sign Up', style: TextStyle(color: Colors.white)),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blue, Colors.blueAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Sign Up', style: TextStyle(color: Colors.white)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Show Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text(message),
+        title: const Text(
+          'Error',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.grey),
+        ),
         actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blue, Colors.blueAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Show Success Dialog
   void _showSuccessDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Success', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text(message),
+        title: const Text(
+          'Success',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.grey),
+        ),
         actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blue, Colors.blueAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Show Connection Error Bottom Sheet
   void _showConnectionErrorBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -1131,14 +1208,14 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
+                color: Colors.lightBlue.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Center(
+              child: const Center(
                 child: Icon(
                   Icons.wifi_off_rounded,
                   size: 56,
-                  color: Colors.blue.shade600,
+                  color: Colors.lightBlue,
                 ),
               ),
             ),
@@ -1148,16 +1225,16 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            Text(
+            const Text(
               'Google sign-in failed. Please check your internet connection and try again.',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.grey.shade600,
+                color: Colors.grey,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -1165,25 +1242,36 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _handleGoogleSignIn();
-                },
-                icon: const Icon(Icons.refresh, size: 20),
-                label: const Text(
-                  'Tap to Retry',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _handleGoogleSignIn();
+                  },
+                  icon: const Icon(Icons.refresh, size: 20),
+                  label: const Text(
+                    'Tap to Retry',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),
@@ -1193,11 +1281,11 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(
+                child: const Text(
                   'Cancel',
                   style: TextStyle(
                     fontSize: 15,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey,
                   ),
                 ),
               ),
@@ -1215,7 +1303,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final isLoading = authProvider.isLoading;
 
         return Scaffold(
-          backgroundColor: Colors.grey.shade100,
+          backgroundColor: Colors.grey[100],
           body: SafeArea(
             child: Column(
               children: [
@@ -1233,7 +1321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                         ),
@@ -1255,7 +1343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -1270,11 +1358,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: const BorderSide(color: Colors.grey),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: const BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -1300,8 +1388,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Please enter a valid email address';
                               }
-                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-                              );
+                              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                               if (!emailRegex.hasMatch(value.trim())) {
                                 return 'Please enter a valid email address';
                               }
@@ -1314,7 +1401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -1329,11 +1416,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               fillColor: Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: const BorderSide(color: Colors.grey),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide: const BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -1394,31 +1481,41 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: isLoading ? null : _handleLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Colors.blue, Colors.blueAccent],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
                               ),
-                              elevation: 2,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            child: isLoading
-                                ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            child: ElevatedButton(
+                              onPressed: isLoading ? null : _handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                            )
-                                : const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              child: isLoading
+                                  ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                                  : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -1462,12 +1559,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
+                                child: const Text(
                                   'OR',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey,
                                   ),
                                 ),
                               ),
@@ -1482,7 +1579,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: OutlinedButton.styleFrom(
                               backgroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              side: BorderSide(color: Colors.grey.shade300),
+                              side: const BorderSide(color: Colors.grey),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -1501,7 +1598,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.black,
+                                    color: Colors.black87,
                                   ),
                                 ),
                               ],
@@ -1529,7 +1626,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// SCREEN 3 - SIGN UP SCREEN
+// ==================== SIGN UP SCREEN ====================
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
 
@@ -1544,7 +1641,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Handle Sign Up using Provider
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -1576,24 +1672,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // Show Error Dialog
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text(message),
+        title: const Text(
+          'Error',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+          ),
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.grey),
+        ),
         actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blue, Colors.blueAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -1607,7 +1729,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         final isLoading = authProvider.isLoading;
 
         return Scaffold(
-          backgroundColor: Colors.grey.shade100,
+          backgroundColor: Colors.grey[100],
           body: SafeArea(
             child: Column(
               children: [
@@ -1625,13 +1747,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget _buildAppBar(BuildContext context, bool isLoading) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
       ),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, size: 24),
+            icon: const Icon(Icons.arrow_back, size: 24, color: Colors.blue),
             onPressed: isLoading ? null : () => Navigator.of(context).pop(),
           ),
           const Expanded(
@@ -1641,7 +1763,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.black87,
                 ),
               ),
             ),
@@ -1686,7 +1808,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
@@ -1714,7 +1836,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
@@ -1727,8 +1849,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             if (value == null || value.trim().isEmpty) {
               return 'Please enter a valid email address';
             }
-            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+.)+[\w-]{2,4}$'
-            );
+            final emailRegex = RegExp(r'^[\w-.]+@([\w-]+.)+[\w-]{2,4}$');
             if (!emailRegex.hasMatch(value.trim())) {
               return 'Please enter a valid email address';
             }
@@ -1748,7 +1869,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
@@ -1786,32 +1907,48 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _buildSignUpButton(bool isLoading) {
-    return ElevatedButton(
-      onPressed: isLoading ? null : _handleSignUp,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.blue, Colors.blueAccent],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        elevation: 4,
-        shadowColor: Colors.blue.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: isLoading
-          ? const SizedBox(
-        height: 20,
-        width: 20,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      child: ElevatedButton(
+        onPressed: isLoading ? null : _handleSignUp,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-      )
-          : const Text(
-        'Create Account',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+        child: isLoading
+            ? const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        )
+            : const Text(
+          'Create Account',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -1854,23 +1991,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
       fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        borderSide: const BorderSide(color: Colors.grey),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
+        borderSide: const BorderSide(color: Colors.grey, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.blue, width: 1),
+        borderSide: const BorderSide(color: Colors.blue, width: 2),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red, width: 1),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
       contentPadding: const EdgeInsets.all(16),
       suffixIcon: suffixIcon,
@@ -1885,7 +2022,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 }
-// SCREEN 4 - USERS SCREEN
+
+// ============================================================
+// USERS SCREEN
+// ============================================================
 class UsersScreen extends StatefulWidget {
   const UsersScreen({Key? key}) : super(key: key);
 
@@ -1929,33 +2069,66 @@ class _UsersScreenState extends State<UsersScreen> {
   void _showLogoutConfirmation() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text(
-          'Logout',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _handleLogout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Logout',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
-            child: const Text('Logout', style: TextStyle(color: Colors.white)),
+            content: const Text(
+              'Are you sure you want to logout?',
+              style: TextStyle(color: Colors.grey),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _handleLogout();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -1963,33 +2136,66 @@ class _UsersScreenState extends State<UsersScreen> {
   void _showDeleteConfirmation(FirestoreUser user) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text(
-          'Delete User',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Text('Are you sure you want to delete ${user.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _handleDeleteUser(user.uid);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Delete User',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
               ),
             ),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            content: Text(
+              'Are you sure you want to delete ${user.name}?',
+              style: const TextStyle(color: Colors.grey),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.red, Colors.redAccent],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _handleDeleteUser(user.uid);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -2003,10 +2209,14 @@ class _UsersScreenState extends State<UsersScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User deleted successfully'),
+        SnackBar(
+          content: const Text('User deleted successfully'),
           backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 2),
         ),
       );
     } else {
@@ -2018,23 +2228,53 @@ class _UsersScreenState extends State<UsersScreen> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Error', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text(message),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Error',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
               ),
             ),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            content: Text(
+              message,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            actions: [
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -2044,139 +2284,164 @@ class _UsersScreenState extends State<UsersScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+      builder: (context) =>
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.blue.shade100,
-                  backgroundImage:
-                  user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
-                  child: user.photoUrl == null
-                      ? Text(
-                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  )
-                      : null,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.name,
+                // Header
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 32,
+                      backgroundColor: Colors.lightBlue.withOpacity(0.2),
+                      backgroundImage:
+                      user.photoUrl != null
+                          ? NetworkImage(user.photoUrl!)
+                          : null,
+                      child: user.photoUrl == null
+                          ? Text(
+                        user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Colors.blue,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: user.provider == 'google'
-                              ? Colors.red.shade50
-                              : Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          user.provider == 'google' ? 'Google' : 'Email',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: user.provider == 'google'
-                                ? Colors.red.shade700
-                                : Colors.blue.shade700,
+                      )
+                          : null,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: user.provider == 'google'
+                                  ? Colors.red.withOpacity(0.1)
+                                  : Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              user.provider == 'google' ? 'Google' : 'Email',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: user.provider == 'google'
+                                    ? Colors.red
+                                    : Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.black87,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Divider(color: Colors.grey),
+                const SizedBox(height: 20),
+
+                // User Details
+                _buildDetailRow(Icons.email_outlined, 'Email', user.email),
+                const SizedBox(height: 16),
+                _buildDetailRow(
+                  Icons.calendar_today_outlined,
+                  'Joined',
+                  _formatDate(user.createdAt),
+                ),
+                const SizedBox(height: 16),
+                _buildDetailRow(
+                  Icons.login_outlined,
+                  'Last Login',
+                  user.lastLoginAt != null
+                      ? _formatDate(user.lastLoginAt!)
+                      : 'Never',
+                ),
+                const SizedBox(height: 28),
+
+                // Delete Button
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.red, Colors.redAccent],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _showDeleteConfirmation(user);
+                      },
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      label: const Text(
+                        'Delete User',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
+                const SizedBox(height: 16),
               ],
             ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            // User Details
-            _buildDetailRow(Icons.email, 'Email', user.email),
-            const SizedBox(height: 16),
-            _buildDetailRow(
-              Icons.calendar_today,
-              'Joined',
-              _formatDate(user.createdAt),
-            ),
-            const SizedBox(height: 16),
-            _buildDetailRow(
-              Icons.login,
-              'Last Login',
-              user.lastLoginAt != null
-                  ? _formatDate(user.lastLoginAt!)
-                  : 'Never',
-            ),
-            const SizedBox(height: 24),
-
-            // Delete Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _showDeleteConfirmation(user);
-                },
-                icon: const Icon(Icons.delete, size: 20),
-                label: const Text(
-                  'Delete User',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey.shade600),
+        Icon(icon, size: 20, color: Colors.blue),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -2184,18 +2449,18 @@ class _UsersScreenState extends State<UsersScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 value,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: Colors.black,
+                  color: Colors.black87,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2224,15 +2489,12 @@ class _UsersScreenState extends State<UsersScreen> {
 
       String minute = date.minute.toString().padLeft(2, '0');
       return 'Today at $hour:$minute $period';
-
     } else if (difference.inDays == 1) {
       // Yesterday
       return 'Yesterday';
-
     } else if (difference.inDays < 7) {
       // Less than 7 days - Show "X days ago"
       return '${difference.inDays} days ago';
-
     } else {
       // 7 days or more - Show full date
       return '${date.day}/${date.month}/${date.year}';
@@ -2242,16 +2504,16 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withOpacity(0.9),
         elevation: 0,
         title: const Text(
           'UserHub',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.black87,
           ),
         ),
         centerTitle: true,
@@ -2270,7 +2532,7 @@ class _UsersScreenState extends State<UsersScreen> {
             )
           else
             IconButton(
-              icon: const Icon(Icons.logout, color: Colors.black),
+              icon: const Icon(Icons.logout, color: Colors.black87),
               onPressed: _showLogoutConfirmation,
               tooltip: 'Logout',
             ),
@@ -2284,13 +2546,15 @@ class _UsersScreenState extends State<UsersScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(),
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Loading users...',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey,
                     ),
                   ),
                 ],
@@ -2307,31 +2571,50 @@ class _UsersScreenState extends State<UsersScreen> {
                   Icon(
                     Icons.error_outline,
                     size: 64,
-                    color: Colors.red.shade300,
+                    color: Colors.red.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     userProvider.errorMessage!,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => userProvider.refreshUsers(),
-                    icon: const Icon(Icons.refresh, size: 20),
-                    label: const Text('Retry'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.blueAccent],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => userProvider.refreshUsers(),
+                      icon: const Icon(Icons.refresh, size: 20),
+                      label: const Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -2350,13 +2633,13 @@ class _UsersScreenState extends State<UsersScreen> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
+                      color: Colors.lightBlue.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.people_outline,
                       size: 64,
-                      color: Colors.blue.shade300,
+                      color: Colors.blue,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -2365,32 +2648,51 @@ class _UsersScreenState extends State<UsersScreen> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'There are no users registered yet.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey,
                     ),
                   ),
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    onPressed: () => userProvider.refreshUsers(),
-                    icon: const Icon(Icons.refresh, size: 20),
-                    label: const Text('Refresh'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.blueAccent],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => userProvider.refreshUsers(),
+                      icon: const Icon(Icons.refresh, size: 20),
+                      label: const Text('Refresh'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -2402,22 +2704,30 @@ class _UsersScreenState extends State<UsersScreen> {
           // User List
           return RefreshIndicator(
             onRefresh: () => userProvider.refreshUsers(),
+            color: Colors.blue,
             child: Column(
               children: [
                 // User Count Header
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.people, color: Colors.grey.shade600, size: 20),
+                      const Icon(
+                        Icons.people_outline,
+                        color: Colors.blue,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
-                        '${userProvider.users.length} ${userProvider.users.length == 1 ? 'User' : 'Users'}',
-                        style: TextStyle(
+                        '${userProvider.users.length} ${userProvider.users
+                            .length == 1 ? 'User' : 'Users'}',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
+                          color: Colors.black87,
                         ),
                       ),
                     ],
@@ -2447,14 +2757,15 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget _buildUserCard(FirestoreUser user) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
+      elevation: 2,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.blue.withOpacity(0.2)),
       ),
       child: InkWell(
         onTap: () => _showUserDetails(user),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -2462,7 +2773,7 @@ class _UsersScreenState extends State<UsersScreen> {
               // User Avatar
               CircleAvatar(
                 radius: 28,
-                backgroundColor: Colors.blue.shade100,
+                backgroundColor: Colors.lightBlue.withOpacity(0.2),
                 backgroundImage:
                 user.photoUrl != null ? NetworkImage(user.photoUrl!) : null,
                 child: user.photoUrl == null
@@ -2488,7 +2799,7 @@ class _UsersScreenState extends State<UsersScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Colors.black87,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2496,38 +2807,38 @@ class _UsersScreenState extends State<UsersScreen> {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 10,
+                            vertical: 5,
                           ),
                           decoration: BoxDecoration(
                             color: user.provider == 'google'
-                                ? Colors.red.shade50
-                                : Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(6),
+                                ? Colors.red.withOpacity(0.1)
+                                : Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 user.provider == 'google'
-                                    ? Icons.g_mobiledata
-                                    : Icons.email,
+                                    ? Icons.g_mobiledata_rounded
+                                    : Icons.email_outlined,
                                 size: 14,
-                                color: user.provider == 'googlegit push'
-                                    ? Colors.red.shade700
-                                    : Colors.blue.shade700,
+                                color: user.provider == 'google'
+                                    ? Colors.red
+                                    : Colors.blue,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -2536,8 +2847,8 @@ class _UsersScreenState extends State<UsersScreen> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: user.provider == 'google'
-                                      ? Colors.red.shade700
-                                      : Colors.blue.shade700,
+                                      ? Colors.red
+                                      : Colors.blue,
                                 ),
                               ),
                             ],
@@ -2550,10 +2861,10 @@ class _UsersScreenState extends State<UsersScreen> {
               ),
 
               // Arrow Icon
-              Icon(
-                Icons.arrow_forward_ios,
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
                 size: 16,
-                color: Colors.grey.shade400,
+                color: Colors.blue,
               ),
             ],
           ),
