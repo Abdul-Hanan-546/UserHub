@@ -1,16 +1,41 @@
-# full_ulist_ui
+# UserHub – Flutter Firebase App
 
-A new Flutter project.
+UserHub is a Flutter mobile application developed as an internship project.  
+The main purpose of this app is to practice Firebase authentication, Firestore
+integration, and proper app flow using Flutter.
 
-## Getting Started
+## Features
+- Splash Screen on app start
+- User Sign Up (Email & Password)
+- User Login
+- Google Sign-In
+- Forgot Password (Email reset)
+- Firebase Authentication
+- Cloud Firestore user storage
+- Real-time Users List
+- User profile image (Google users)
+- Refresh users list
+- Delete user from Firestore
+- Loading & error handling screens
 
-This project is a starting point for a Flutter application.
+## Technologies Used
+- Flutter
+- Firebase Authentication
+- Cloud Firestore
+- Google Sign-In
+- Provider (State Management)
 
-A few resources to get you started if this is your first Flutter project:
+## App Flow
+1. App starts with Splash Screen  
+2. Authentication check (Login / Sign Up)  
+3. User is redirected to Users List after successful login  
+4. Users are loaded from Firestore in real time  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Notes
+- Firebase is required to run this project
+- Google Sign-In and Email/Password authentication must be enabled
+- Firestore database must be created in Firebase Console
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Purpose
+This project was created for learning and internship purposes to understand
+real-world Flutter app development with Firebase backend integration.
